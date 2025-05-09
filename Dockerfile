@@ -29,5 +29,8 @@ RUN apt-get update \
 # Копируем код
 COPY . .
 
-EXPOSE 5000
-CMD ["python3", "app.py"]
+ENV APP_PORT=8080
+ENV APP_HOST=0.0.0.0
+
+EXPOSE ${APP_PORT}
+CMD ["python3", "main.py"]

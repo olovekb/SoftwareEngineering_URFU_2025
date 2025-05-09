@@ -1,11 +1,10 @@
 ## Как запустить проект 1 способ (нужен Python 3.10):
 
-### 1. Создание виртуального окружения и установка библиотек
+### 1. Создание виртуального окружения
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
 ```
 
 ### 2. Установить библиотеки
@@ -16,16 +15,20 @@ pip install -r requirements.txt
 
 ### 3. Установить GDAL
 
+#### Для Windows
 ```bash
 pip install GDAL-3.10.1-cp310-cp310-win_amd64.whl
 ```
-
-### 4. Запустить файл app.py и перейти по ссылке
-
+#### Для MacOS
 ```bash
-Running on http://127.0.0.1:5000
+brew install gdal
 ```
 
+### 4. Запустить файл main.py и перейти по ссылке
+
+```bash
+Running on [ссылка]
+```
 
 ## Как запустить проект 2 способ (нужна программа Docker):
 
@@ -40,15 +43,16 @@ docker build -t mykurgan-app .
 ### 3. Запустить контейнер
 
 ```bash
-docker run -p 5000:5000 mykurgan-app 
+docker run -p 8080:8080 mykurgan-app 
 ```
 
 ### 4. Перейти по ссылке
 
 ```bash
-Running on http://127.0.0.1:5000
+Running on [ссылка]
 ```
 
+### Прочее
 
 Если во время работы происходит ошибка скорее всего не хватает ОЗУ эмуляции WSL2:
 
@@ -63,8 +67,6 @@ memory=16GB
 processors=16
 
 3. Далее программа Docker попросит перезагрузку, перезагружаем, и заново запускаем.
-
-
 
 Директория ./static  - хранит .csv файл с найдеными курганами и сгенерированой 2д картой их расположения
 
