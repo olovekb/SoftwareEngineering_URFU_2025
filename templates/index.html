@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Загрузка DEM с прогресс-барами</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+
+    .stage {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+    .stage-label {
+      width: 150px;
+      font-weight: bold;
+    }
+    progress {
+      width: 25vw;
+      height: 20px;
+      margin: 0 10px;
+    }
+    .pct {
+      width: 40px;
+      text-align: right;
+    }
+    .check {
+      display: none;
+      color: green;
+      font-size: 20px;
+      margin-left: 10px;
+    }
+    button { padding: 8px 16px; font-size: 16px; }
+
+    #finalNote {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>Загрузите DEM-файл</h1>
+
+  <form id="uploadForm">
+    <input type="file" id="demfile" name="demfile" accept=".asc,.tif,.tiff" required>
+    <button type="submit" id="submitBtn">Загрузить</button>
+  </form>
+
+  <div class="stage">
+    <div class="stage-label">1. Загрузка</div>
+    <progress id="bar1" max="100" value="0"></progress>
+    <div id="pct1" class="pct">0%</div>
+    <span id="check1" class="check">✔️</span>
+  </div>
+
+  <div class="stage">
+    <div class="stage-label">2. Разбиение</div>
+    <progress id="bar2" max="100" value="0"></progress>
+    <div id="pct2" class="pct">0%</div>
+    <span id="check2" class="check">✔️</span>
+  </div>
+
+  <div class="stage">
+    <div class="stage-label">3. Детекция</div>
+    <progress id="bar3" max="100" value="0"></progress>
+    <div id="pct3" class="pct">0%</div>
+    <span id="check3" class="check">✔️</span>
+  </div>
+
+  <!-- Сообщение от сервера -->
+  <div id="finalNote"></div>
+
+  <script>
+    const form      = document.getElementById('uploadForm');
+    const fileIn    = document.getElementById('demfile');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const bars   = [1,2,3].map(i => document.getElementById(`bar${i}`));
+    const pcts   = [1,2,3].map(i => document.getElementById(`pct${i}`));
+    const checks = [1,2,3].map(i => document.getElementById(`check${i}`));
+    const noteEl = document.getElementById('finalNote');
+
+    function resetAll() {
+      bars.forEach(b => b.value = 0);
+      pcts.forEach(p => p.textContent = '0%');
+      checks.forEach(c => c.style.display = 'none');
+      noteEl.textContent = '';
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const file = fileIn.files[0];
+      if (!file) return;
+
+      fileIn.disabled = true;
+      submitBtn.disabled = true;
+      resetAll();
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST','/upload_json');
+
+      xhr.upload.onprogress = ev => {
+        if (!ev.lengthComputable) return;
+        const p = Math.round(ev.loaded/ev.total*100);
+        bars[0].value = p;
+        pcts[0].textContent = p + '%';
+        if (p === 100) checks[0].style.display = 'inline';
+      };
+
+      xhr.onload = () => {
+        if (xhr.status !== 200) {
+          alert('Ошибка загрузки');
+          fileIn.disabled = false;
+          submitBtn.disabled = false;
+          return;
+        }
+        checks[0].style.display = 'inline';
+        const { sid } = JSON.parse(xhr.responseText);
+
+        const evt = new EventSource(`/stream/${sid}`);
+        evt.onmessage = msg => {
+          const data = JSON.parse(msg.data);
+          const overall = data.percent;
+
+          if (data.note) {
+            noteEl.textContent = data.note;
+          }
+
+          if (overall <= 50) {
+            const p2 = Math.round(overall / 50 * 100);
+            bars[1].value = p2;
+            pcts[1].textContent = p2 + '%';
+            if (p2 === 100) checks[1].style.display = 'inline';
+          } else {
+            bars[1].value = 100;
+            pcts[1].textContent = '100%';
+            checks[1].style.display = 'inline';
+
+            const p3 = Math.round((overall - 50) / 50 * 100);
+            bars[2].value = p3;
+            pcts[2].textContent = p3 + '%';
+            if (p3 === 100) {
+              checks[2].style.display = 'inline';
+              evt.close();
+              noteEl.textContent = '';
+              setTimeout(() => location.href = `/result/${sid}`, 300);
+            }
+          }
+        };
+
+        evt.onerror = () => {
+          console.error('SSE error');
+          evt.close();
+        };
+      };
+
+      const formData = new FormData();
+      formData.append('demfile', file);
+      xhr.send(formData);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты обработки</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #333; }
+        .image-container { margin: 20px 0; }
+        img { max-width: 100%; height: auto; display: block; margin: 10px 0; }
+        .downloads { margin: 20px 0; }
+        ul { list-style: none; padding: 0; }
+        ul li { margin-bottom: 8px; }
+        a { color: #0066cc; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>Результаты обработки</h1>
+
+    <section class="image-container">
+        <h2>Карта с найденными курганами</h2>
+        <img src="{{ url_for('static', filename=image_file) }}"
+             alt="Результирующая карта с курганами">
+    </section>
+
+    <section class="downloads">
+        <h2>Скачать результаты</h2>
+        <ul>
+            <li>
+                CSV с координатами:
+                <a href="{{ url_for('download_file', filename=csv_file) }}">
+                  Скачать CSV
+                </a>
+            </li>
+            <li>
+                Изображение карты:
+                <a href="{{ url_for('download_file', filename=image_file) }}">
+                  Скачать PNG
+                </a>
+            </li>
+        </ul>
+    </section>
+</body>
+</html>
