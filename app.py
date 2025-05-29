@@ -4,7 +4,10 @@ import time
 import json
 import threading
 import matplotlib
-from flask import Flask, request, render_template, send_from_directory, Response, stream_with_context, jsonify
+from flask import (
+    Flask, request, render_template, send_from_directory,
+    Response, stream_with_context, jsonify
+)
 from werkzeug.utils import secure_filename
 from detection import Detection
 from config import Config
@@ -24,10 +27,13 @@ class App:
 
     def _mount_routes(self):
         self.app.add_url_rule('/', 'index', self._index)
-        self.app.add_url_rule('/upload_json', 'upload_json', self._upload_json, methods=['POST'])
+        self.app.add_url_rule(
+            '/upload_json', 'upload_json', self._upload_json, methods=['POST']
+        )
         self.app.add_url_rule('/stream/<sid>', 'stream', self._stream)
         self.app.add_url_rule('/result/<sid>', 'show_result', self._show_result)
-        self.app.add_url_rule('/download/<filename>', 'download_file', self._download_file)
+        self.app.add_url_rule('/download/<filename>', 'download_file',
+                              self._download_file)
 
     def _index(self):
         return render_template('index.html')
@@ -38,7 +44,9 @@ class App:
             return jsonify({'error': 'Invalid file'}), 400
 
         os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
-        path = os.path.join(Config.UPLOAD_FOLDER, secure_filename(file.filename))
+        path = os.path.join(
+            Config.UPLOAD_FOLDER, secure_filename(file.filename)
+        )
         file.save(path)
 
         sid = str(uuid.uuid4())
@@ -61,7 +69,9 @@ class App:
                 message = {'percent': p}
 
                 if 98 <= p < 100:
-                    message['note'] = 'Подождите пожалуйста, идет финальная обработка'
+                    message['note'] = (
+                        'Подождите пожалуйста, идет финальная обработка'
+                    )
 
                 yield f"data: {json.dumps(message)}\n\n"
 
@@ -70,7 +80,10 @@ class App:
 
                 time.sleep(0.3)
 
-        return Response(stream_with_context(event_stream()), mimetype='text/event-stream')
+        return Response(
+            stream_with_context(event_stream()),
+            mimetype='text/event-stream'
+        )
 
     def _show_result(self, sid):
         res = self.detection.results.get(sid)
@@ -85,7 +98,12 @@ class App:
         )
 
     def _download_file(self, filename):
-        return send_from_directory(Config.STATIC_FOLDER, filename, as_attachment=True)
+        return send_from_directory(
+            Config.STATIC_FOLDER, filename, as_attachment=True
+        )
 
     def _allowed_file(self, filename):
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+        return (
+            '.' in filename and
+            filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+        )

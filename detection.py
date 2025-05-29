@@ -4,12 +4,13 @@ import io
 import math
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import imageio.v2 as imageio
 from rvt.default import DefaultValues
 from ultralytics import YOLO
 from config import Config
+
+matplotlib.use('Agg')
 
 
 class Detection:
@@ -103,9 +104,9 @@ class Detection:
         quant_filtered = []
         for x, y in detected:
             ri, ci = int(round(y)), int(round(x))
-            if 0 <= ri < arr.shape[0] and 0 <= ci < arr.shape[1]:
-                if arr[ri, ci] >= high_q:
-                    quant_filtered.append((x, y))
+            if (0 <= ri < arr.shape[0] and 0 <= ci < arr.shape[1] and
+                    arr[ri, ci] >= high_q):
+                quant_filtered.append((x, y))
 
         confirmed = []
         half = Config.PATCH_SIZE // 2
@@ -121,7 +122,8 @@ class Detection:
         thresh_px = Config.PROXIMITY_M / cellsize
         unique_pts = []
         for pt in confirmed:
-            if not any(math.hypot(pt[0] - u[0], pt[1] - u[1]) < thresh_px for u in unique_pts):
+            if not any(math.hypot(pt[0] - u[0], pt[1] - u[1]) < thresh_px
+                       for u in unique_pts):
                 unique_pts.append(pt)
         final_pts = unique_pts
 
@@ -203,8 +205,10 @@ class Detection:
             for c in range(0, ncols - Config.PATCH_SIZE + 1, Config.PATCH_SIZE):
                 coords.append((r, c))
 
-        for r in range(0, nrows - Config.PATCH_SIZE - half + 1, Config.PATCH_SIZE):
-            for c in range(0, ncols - Config.PATCH_SIZE - half + 1, Config.PATCH_SIZE):
+        for r in range(0, nrows - Config.PATCH_SIZE - half + 1,
+                       Config.PATCH_SIZE):
+            for c in range(0, ncols - Config.PATCH_SIZE - half + 1,
+                           Config.PATCH_SIZE):
                 coords.append((r + half, c + half))
 
         total = len(coords)
