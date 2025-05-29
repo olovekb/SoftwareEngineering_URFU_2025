@@ -4,17 +4,18 @@ import io
 import math
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import imageio.v2 as imageio
 from rvt.default import DefaultValues
 from ultralytics import YOLO
 from config import Config
 
+matplotlib.use('Agg')
+
+
 class Detection:
     def __init__(self):
         self.model = YOLO(Config.MODEL_PATH)
-
         self.progress = {}
         self.results = {}
 
@@ -56,8 +57,10 @@ class Detection:
         ax.imshow(stretched, cmap='gray', origin='upper')
         for r in range(0, nrows, Config.PATCH_SIZE):
             for c in range(0, arr.shape[1], Config.PATCH_SIZE):
-                ax.add_patch(plt.Rectangle((c, r), Config.PATCH_SIZE, Config.PATCH_SIZE,
-                                           edgecolor='cyan', facecolor='none', linewidth=0.5))
+                ax.add_patch(plt.Rectangle(
+                    (c, r), Config.PATCH_SIZE, Config.PATCH_SIZE,
+                    edgecolor='cyan', facecolor='none', linewidth=0.5
+                ))
         ax.set_title('2. Разбиение на патчи')
         capture(fig)
         plt.close(fig)
@@ -81,8 +84,10 @@ class Detection:
             _, r_str, c_str, _ = name.split('_')
             r0, c0 = int(r_str), int(c_str)
             for x1, y1, x2, y2 in res.boxes.xyxy.cpu().numpy():
-                ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
-                                           edgecolor='red', linewidth=1.5))
+                ax.add_patch(plt.Rectangle(
+                    (x1, y1), x2 - x1, y2 - y1,
+                    edgecolor='red', linewidth=1.5
+                ))
                 cx = (x1 + x2) / 2 + c0
                 cy = (y1 + y2) / 2 + r0
                 detected.append((cx, cy))
@@ -99,15 +104,16 @@ class Detection:
         quant_filtered = []
         for x, y in detected:
             ri, ci = int(round(y)), int(round(x))
-            if 0 <= ri < arr.shape[0] and 0 <= ci < arr.shape[1]:
-                if arr[ri, ci] >= high_q:
-                    quant_filtered.append((x, y))
+            if (0 <= ri < arr.shape[0] and 0 <= ci < arr.shape[1] and
+                    arr[ri, ci] >= high_q):
+                quant_filtered.append((x, y))
 
         confirmed = []
         half = Config.PATCH_SIZE // 2
         for x, y in quant_filtered:
             ri, ci = int(round(y)), int(round(x))
-            if ri - half < 0 or ri + half > arr.shape[0] or ci - half < 0 or ci + half > arr.shape[1]:
+            if (ri - half < 0 or ri + half > arr.shape[0] or
+                    ci - half < 0 or ci + half > arr.shape[1]):
                 continue
             patch = arr[ri - half:ri + half, ci - half:ci + half]
             if self._get_slice(patch, cellsize):
@@ -116,7 +122,8 @@ class Detection:
         thresh_px = Config.PROXIMITY_M / cellsize
         unique_pts = []
         for pt in confirmed:
-            if not any(math.hypot(pt[0] - u[0], pt[1] - u[1]) < thresh_px for u in unique_pts):
+            if not any(math.hypot(pt[0] - u[0], pt[1] - u[1]) < thresh_px
+                       for u in unique_pts):
                 unique_pts.append(pt)
         final_pts = unique_pts
 
@@ -131,7 +138,8 @@ class Detection:
         plt.close(fig)
 
         csv_name = f'coords_{sid}.csv'
-        with open(os.path.join(folder_path, csv_name), 'w', encoding='utf-8') as f:
+        with open(os.path.join(folder_path, csv_name), 'w',
+                  encoding='utf-8') as f:
             f.write('Name;X;Y\n')
             for idx, (x, y) in enumerate(final_pts, start=1):
                 x_abs = xll + x * cellsize
@@ -145,7 +153,11 @@ class Detection:
             for frame in frames:
                 writer.append_data(frame)
 
-        self.results[sid] = {'png': png_name, 'csv': csv_name, 'anim': anim_name}
+        self.results[sid] = {
+            'png': png_name,
+            'csv': csv_name,
+            'anim': anim_name
+            }
         self.progress[sid] = 100
         logging.info(f'[{sid}] Обработка завершена.')
 
@@ -195,11 +207,14 @@ class Detection:
         half = Config.PATCH_SIZE // 2
 
         for r in range(0, nrows - Config.PATCH_SIZE + 1, Config.PATCH_SIZE):
-            for c in range(0, ncols - Config.PATCH_SIZE + 1, Config.PATCH_SIZE):
+            for c in range(0, ncols - Config.PATCH_SIZE + 1,
+                           Config.PATCH_SIZE):
                 coords.append((r, c))
 
-        for r in range(0, nrows - Config.PATCH_SIZE - half + 1, Config.PATCH_SIZE):
-            for c in range(0, ncols - Config.PATCH_SIZE - half + 1, Config.PATCH_SIZE):
+        for r in range(0, nrows - Config.PATCH_SIZE - half + 1,
+                       Config.PATCH_SIZE):
+            for c in range(0, ncols - Config.PATCH_SIZE - half + 1,
+                           Config.PATCH_SIZE):
                 coords.append((r + half, c + half))
 
         total = len(coords)
@@ -210,7 +225,8 @@ class Detection:
 
         for i, (r, c) in enumerate(coords, start=1):
             patch = img[r:r + Config.PATCH_SIZE, c:c + Config.PATCH_SIZE]
-            fn = os.path.join(out_dir, f'patch_{r}_{c}_{Config.PATCH_SIZE}.png')
+            fn = os.path.join(out_dir,
+                              f'patch_{r}_{c}_{Config.PATCH_SIZE}.png')
             save_rgb(patch, fn)
             pct = math.floor(i * 50 / total)
             self.progress[sid] = pct
