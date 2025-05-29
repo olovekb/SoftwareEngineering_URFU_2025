@@ -77,7 +77,12 @@ class App:
         if not res:
             return 'Result not ready', 404
 
-        return render_template('result.html', image_file=res['png'], csv_file=res['csv'], anim_file=res['anim'])
+        return render_template(
+            'result.html',
+            image_file=res['png'],
+            csv_file=res['csv'],
+            anim_file=res['anim']
+        )
 
     def _download_file(self, filename):
         return send_from_directory(Config.STATIC_FOLDER, filename, as_attachment=True)

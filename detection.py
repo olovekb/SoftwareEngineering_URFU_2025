@@ -111,7 +111,8 @@ class Detection:
         half = Config.PATCH_SIZE // 2
         for x, y in quant_filtered:
             ri, ci = int(round(y)), int(round(x))
-            if ri - half < 0 or ri + half > arr.shape[0] or ci - half < 0 or ci + half > arr.shape[1]:
+            if (ri - half < 0 or ri + half > arr.shape[0] or
+                    ci - half < 0 or ci + half > arr.shape[1]):
                 continue
             patch = arr[ri - half:ri + half, ci - half:ci + half]
             if self._get_slice(patch, cellsize):

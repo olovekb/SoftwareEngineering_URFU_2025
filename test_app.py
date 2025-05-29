@@ -1,9 +1,9 @@
+import io
 import unittest
 from app import App
-import io
+
 
 class TestApp(unittest.TestCase):
-
     def setUp(self):
         """Настройка тестового окружения перед каждым тестом."""
         self.app_instance = App()
@@ -26,7 +26,11 @@ class TestApp(unittest.TestCase):
         data = {
             'demfile': (io.BytesIO(b"dummy data"), 'invalid.txt')
         }
-        response = self.client.post('/upload_json', content_type='multipart/form-data', data=data)
+        response = self.client.post(
+            '/upload_json',
+            content_type='multipart/form-data',
+            data=data
+        )
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', response.get_json())
 
@@ -35,7 +39,11 @@ class TestApp(unittest.TestCase):
         data = {
             'demfile': (io.BytesIO(b"dummy data"), 'valid.asc')
         }
-        response = self.client.post('/upload_json', content_type='multipart/form-data', data=data)
+        response = self.client.post(
+            '/upload_json',
+            content_type='multipart/form-data',
+            data=data
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIn('sid', response.get_json())
 
