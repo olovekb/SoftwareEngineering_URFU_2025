@@ -31,7 +31,8 @@ class App:
             '/upload_json', 'upload_json', self._upload_json, methods=['POST']
         )
         self.app.add_url_rule('/stream/<sid>', 'stream', self._stream)
-        self.app.add_url_rule('/result/<sid>', 'show_result', self._show_result)
+        self.app.add_url_rule('/result/<sid>', 'show_result',
+                              self._show_result)
         self.app.add_url_rule('/download/<filename>', 'download_file',
                               self._download_file)
 

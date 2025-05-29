@@ -138,7 +138,8 @@ class Detection:
         plt.close(fig)
 
         csv_name = f'coords_{sid}.csv'
-        with open(os.path.join(folder_path, csv_name), 'w', encoding='utf-8') as f:
+        with open(os.path.join(folder_path, csv_name), 'w',
+                  encoding='utf-8') as f:
             f.write('Name;X;Y\n')
             for idx, (x, y) in enumerate(final_pts, start=1):
                 x_abs = xll + x * cellsize
@@ -152,7 +153,11 @@ class Detection:
             for frame in frames:
                 writer.append_data(frame)
 
-        self.results[sid] = {'png': png_name, 'csv': csv_name, 'anim': anim_name}
+        self.results[sid] = {
+            'png': png_name,
+            'csv': csv_name,
+            'anim': anim_name
+            }
         self.progress[sid] = 100
         logging.info(f'[{sid}] Обработка завершена.')
 
@@ -202,7 +207,8 @@ class Detection:
         half = Config.PATCH_SIZE // 2
 
         for r in range(0, nrows - Config.PATCH_SIZE + 1, Config.PATCH_SIZE):
-            for c in range(0, ncols - Config.PATCH_SIZE + 1, Config.PATCH_SIZE):
+            for c in range(0, ncols - Config.PATCH_SIZE + 1,
+                           Config.PATCH_SIZE):
                 coords.append((r, c))
 
         for r in range(0, nrows - Config.PATCH_SIZE - half + 1,
@@ -219,7 +225,8 @@ class Detection:
 
         for i, (r, c) in enumerate(coords, start=1):
             patch = img[r:r + Config.PATCH_SIZE, c:c + Config.PATCH_SIZE]
-            fn = os.path.join(out_dir, f'patch_{r}_{c}_{Config.PATCH_SIZE}.png')
+            fn = os.path.join(out_dir,
+                              f'patch_{r}_{c}_{Config.PATCH_SIZE}.png')
             save_rgb(patch, fn)
             pct = math.floor(i * 50 / total)
             self.progress[sid] = pct
