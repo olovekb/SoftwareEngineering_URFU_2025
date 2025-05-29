@@ -1,0 +1,30 @@
+name: Deploy to Yandex Cloud VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
+        chmod 600 private_key
+        mkdir -p ~/.ssh
+        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+
+    - name: Deploy to VM
+      run: |
+        ssh -i private_key sobol733@158.160.142.103 << 'EOF'
+          cd /SoftwareEngineering_URFU_2025
+          git pull origin main
+          docker-compose down
+          docker-compose up -d --build
+        EOF
