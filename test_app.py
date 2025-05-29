@@ -3,6 +3,7 @@ from app import App
 import io
 
 class TestApp(unittest.TestCase):
+
     def setUp(self):
         self.app_instance = App()
         self.client = self.app_instance.app.test_client()
