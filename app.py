@@ -4,19 +4,19 @@ import time
 import json
 import threading
 import matplotlib
-matplotlib.use('Agg')
 from flask import Flask, request, render_template, send_from_directory, Response, stream_with_context, jsonify
 from werkzeug.utils import secure_filename
 from detection import Detection
 from config import Config
 
+matplotlib.use('Agg')
+
+
 class App:
     def __init__(self):
         self.app = Flask(__name__)
         self.app.secret_key = Config.SECRET_KEY
-
         self.detection = Detection()
-
         self._mount_routes()
 
     def run(self):
@@ -43,7 +43,11 @@ class App:
 
         sid = str(uuid.uuid4())
         self.detection.progress[sid] = 0
-        threading.Thread(target=self.detection.process_dem, args=(path, sid, Config.STATIC_FOLDER), daemon=True).start()
+        threading.Thread(
+            target=self.detection.process_dem,
+            args=(path, sid, Config.STATIC_FOLDER),
+            daemon=True
+        ).start()
 
         return jsonify({'sid': sid})
 

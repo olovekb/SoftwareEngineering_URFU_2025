@@ -11,10 +11,10 @@ from rvt.default import DefaultValues
 from ultralytics import YOLO
 from config import Config
 
+
 class Detection:
     def __init__(self):
         self.model = YOLO(Config.MODEL_PATH)
-
         self.progress = {}
         self.results = {}
 
@@ -56,8 +56,10 @@ class Detection:
         ax.imshow(stretched, cmap='gray', origin='upper')
         for r in range(0, nrows, Config.PATCH_SIZE):
             for c in range(0, arr.shape[1], Config.PATCH_SIZE):
-                ax.add_patch(plt.Rectangle((c, r), Config.PATCH_SIZE, Config.PATCH_SIZE,
-                                           edgecolor='cyan', facecolor='none', linewidth=0.5))
+                ax.add_patch(plt.Rectangle(
+                    (c, r), Config.PATCH_SIZE, Config.PATCH_SIZE,
+                    edgecolor='cyan', facecolor='none', linewidth=0.5
+                ))
         ax.set_title('2. Разбиение на патчи')
         capture(fig)
         plt.close(fig)
@@ -81,8 +83,10 @@ class Detection:
             _, r_str, c_str, _ = name.split('_')
             r0, c0 = int(r_str), int(c_str)
             for x1, y1, x2, y2 in res.boxes.xyxy.cpu().numpy():
-                ax.add_patch(plt.Rectangle((x1, y1), x2 - x1, y2 - y1,
-                                           edgecolor='red', linewidth=1.5))
+                ax.add_patch(plt.Rectangle(
+                    (x1, y1), x2 - x1, y2 - y1,
+                    edgecolor='red', linewidth=1.5
+                ))
                 cx = (x1 + x2) / 2 + c0
                 cy = (y1 + y2) / 2 + r0
                 detected.append((cx, cy))

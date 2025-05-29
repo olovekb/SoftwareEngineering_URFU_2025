@@ -1,7 +1,8 @@
 import os
 
+
 class Config:
-    PORT = port = int(os.getenv('APP_PORT', 8080))
+    PORT = int(os.getenv('APP_PORT', 8080))
     HOST = os.getenv('APP_HOST', '0.0.0.0')
     SECRET_KEY = 'some_random_secret_key'
     UPLOAD_FOLDER = 'uploads'
