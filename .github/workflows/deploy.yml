@@ -23,7 +23,11 @@ jobs:
     - name: Deploy to VM
       run: |
         ssh -i private_key sobol733@158.160.140.111 << 'EOF'
-          cd /SoftwareEngineering_URFU_2025
+          if [ ! -d "SoftwareEngineering_URFU_2025" ]; then
+            echo "Directory SoftwareEngineering_URFU_2025 does not exist. Cloning repository..."
+            git clone https://github.com/olovekb/SoftwareEngineering_URFU_2025.git
+          fi
+          cd SoftwareEngineering_URFU_2025
           git pull origin main
           docker-compose down
           docker-compose up -d --build
