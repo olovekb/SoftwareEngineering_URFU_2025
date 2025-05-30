@@ -22,7 +22,7 @@ jobs:
 
     - name: Deploy to VM
       run: |
-        ssh -i private_key sobol733@158.160.142.103 << 'EOF'
+        ssh -i private_key sobol733@158.160.140.111 << 'EOF'
           cd /SoftwareEngineering_URFU_2025
           git pull origin main
           docker-compose down
