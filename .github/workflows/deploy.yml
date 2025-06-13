@@ -10,25 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up SSH
-      run: |
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
-        chmod 600 private_key
-        mkdir -p ~/.ssh
-        echo "StrictHostKeyChecking no" >> ~/.ssh/config
+      - name: Set up SSH
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
+          chmod 600 private_key
+          mkdir -p ~/.ssh
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
 
-    - name: Deploy to VM
-      run: |
-        ssh -i private_key sobol733@158.160.140.111 << 'EOF'
-          if [ ! -d "SoftwareEngineering_URFU_2025" ]; then
-            echo "Directory SoftwareEngineering_URFU_2025 does not exist. Cloning repository..."
-            git clone https://github.com/olovekb/SoftwareEngineering_URFU_2025.git
-          fi
-          cd SoftwareEngineering_URFU_2025
-          git pull origin main
-          docker-compose down
-          docker-compose up -d --build
-        EOF
+      - name: Deploy to VM
+        run: |
+          ssh -i private_key sobol733@158.160.140.111 << 'EOF'
+            # Clone or update repository
+            if [ ! -d "SoftwareEngineering_URFU_2025" ]; then
+              echo "Directory SoftwareEngineering_URFU_2025 does not exist. Cloning repository..."
+              git clone https://github.com/olovekb/SoftwareEngineering_URFU_2025.git
+            fi
+            cd SoftwareEngineering_URFU_2025
+            git pull origin main
+
+            echo "Pruning unused Docker objects..."
+            docker system prune -af --volumes
+
+            docker-compose down --volumes
+            docker-compose up -d --build
+
+            docker system prune -af --volumes
+          EOF
